@@ -1,35 +1,26 @@
+import geopandas as gpd
 import matplotlib.pyplot as plt
-import matplotlib.tri as tri
-import numpy as np
-
+import matplotlib.patches as patches
 from pyscript import display
 
-# First create the x and y coordinates of the points.
-n_angles = 36
-n_radii = 8
-min_radius = 0.25
-radii = np.linspace(min_radius, 0.5, n_radii)
+# Load the shapefile
+gdf = gpd.read_file('current_all.shp')
 
-angles = np.linspace(0, 2 * np.pi, n_angles, endpoint=False)
-angles = np.repeat(angles[..., np.newaxis], n_radii, axis=1)
-angles[:, 1::2] += np.pi / n_angles
+# Create a Matplotlib figure and axis
+fig, ax = plt.subplots(figsize=(12, 8))
 
-x = (radii * np.cos(angles)).flatten()
-y = (radii * np.sin(angles)).flatten()
-z = (np.cos(radii) * np.cos(3 * angles)).flatten()
+# Set the map boundaries to the US
+ax.set_xlim(-125, -66)
+ax.set_ylim(24, 50)
 
-# Create the Triangulation; no triangles so Delaunay triangulation created.
-triang = tri.Triangulation(x, y)
+# Plot the shapefile data
+gdf.plot(ax=ax, edgecolor='black', facecolor='none')
 
-# Mask off unwanted triangles.
-triang.set_mask(np.hypot(x[triang.triangles].mean(axis=1),
-                            y[triang.triangles].mean(axis=1))
-                < min_radius)
+# Add a title
+ax.set_title('Weather Hazards Map of the United States')
 
-fig1, ax1 = plt.subplots()
-ax1.set_aspect('equal')
-tpc = ax1.tripcolor(triang, z, shading='flat')
-fig1.colorbar(tpc)
-ax1.set_title('tripcolor of Delaunay triangulation, flat shading')
+# Optionally, add gridlines
+ax.grid(True)
 
-display(fig1, target="mpl")
+# Display the plot using PyScript
+display(fig, target="mpl")

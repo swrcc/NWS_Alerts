@@ -3,72 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shapefile Data Visualization</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-        #map {
-            height: 600px;
-            width: 100%;
-        }
-    </style>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/shapefile@0.8.2/dist/shapefile.js"></script>
+    <title>Map Plotting with PyScript</title>
+    <script type="module">
+        import { createPyScript, PyScript } from 'https://pyscript.net/pyodide.js';
+    </script>
 </head>
 <body>
-    <input type="file" id="fileInput" accept=".zip" />
-    <div id="map"></div>
+    <h1>Map Plotting with PyScript</h1>
+    <div id="map-container">
+        <img id="map-image" alt="Map Image">
+    </div>
+    
+    <py-script>
+        import tarfile
+        import matplotlib.pyplot as plt
+        import geopandas as gpd
+        import os
 
-    <script>
-        // Initialize the map
-        const map = L.map('map').setView([42.7654, -73.3004], 7); // Centered around New York State
+        # Extract the shapefile from the tar.gz file
+        tar_file = 'current_all.tar.gz'
+        extract_path = 'current_all'
+        if not os.path.exists(extract_path):
+            os.mkdir(extract_path)
+        
+        with tarfile.open(tar_file, 'r:gz') as tar:
+            tar.extractall(path=extract_path)
+        
+        # Assuming the shapefile is in the extracted directory
+        shapefile_path = [os.path.join(extract_path, f) for f in os.listdir(extract_path) if f.endswith('.shp')][0]
 
-        // Add a tile layer
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
+        # Load the shapefile using geopandas
+        gdf = gpd.read_file(shapefile_path)
 
-        // Ensure shapefile library is loaded
-        document.addEventListener('DOMContentLoaded', function () {
-            // File input change event handler
-            document.getElementById('fileInput').addEventListener('change', function (event) {
-                const file = event.target.files[0];
-                if (!file) return;
+        # Plot the shapefile
+        fig, ax = plt.subplots(figsize=(10, 10))
+        gdf.plot(ax=ax)
+        plt.title('Map from Shapefile')
+        
+        # Save the plot as a .png image
+        png_file = 'map_image.png'
+        plt.savefig(png_file, format='png')
+        plt.close()
 
-                // Load and process the zip file
-                JSZip.loadAsync(file).then(zip => {
-                    const shpFile = zip.file(/\.shp$/i)[0];
-                    const shxFile = zip.file(/\.shx$/i)[0];
-                    const dbfFile = zip.file(/\.dbf$/i)[0];
-                    if (!shpFile || !shxFile || !dbfFile) {
-                        throw new Error('Shapefile components not found in the archive.');
-                    }
-
-                    return Promise.all([
-                        shpFile.async("arraybuffer"),
-                        shxFile.async("arraybuffer"),
-                        dbfFile.async("arraybuffer")
-                    ]);
-                }).then(([shpData, shxData, dbfData]) => {
-                    return shapefile.open(new Uint8Array(shpData), new Uint8Array(shxData), new Uint8Array(dbfData));
-                }).then(source => {
-                    return source.read().then(function processFeature(result) {
-                        if (result.done) return;
-
-                        const feature = result.value;
-                        if (feature.properties.phenom === 'RP' && feature.properties.sig === 'S') {
-                            L.geoJSON(feature, {
-                                onEachFeature: function (feature, layer) {
-                                    layer.bindPopup(`<b>${feature.properties.title}</b><br>${feature.properties.description}`);
-                                }
-                            }).addTo(map);
-                        }
-
-                        return source.read().then(processFeature);
-                    });
-                }).catch(error => console.error('Error:', error));
-            });
-        });
-    </script>
+        # Display the image in the HTML file
+        from js import document
+        image_element = document.getElementById('map-image')
+        image_element.src = png_file
+    </py-script>
 </body>
 </html>

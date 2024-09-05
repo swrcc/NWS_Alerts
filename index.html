@@ -12,8 +12,8 @@
         }
     </style>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.shapefile/0.0.6/leaflet.shapefile.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/shapefile@0.8.2/dist/shapefile.min.js"></script>
 </head>
 <body>
     <input type="file" id="fileInput" accept=".zip" />
@@ -35,27 +35,34 @@
 
             // Load and process the zip file
             JSZip.loadAsync(file).then(zip => {
-                const files = zip.file(/\.shp$/i); // Find the .shp file
-                if (files.length === 0) {
-                    throw new Error('No shapefile found in the archive.');
+                const shpFile = zip.file(/\.shp$/i)[0];
+                const shxFile = zip.file(/\.shx$/i)[0];
+                const dbfFile = zip.file(/\.dbf$/i)[0];
+                if (!shpFile || !shxFile || !dbfFile) {
+                    throw new Error('Shapefile components not found in the archive.');
                 }
 
-                const shpFile = files[0];
                 return Promise.all([
                     shpFile.async("arraybuffer"),
-                    zip.file(/\.shx$/i)[0].async("arraybuffer"),
-                    zip.file(/\.dbf$/i)[0].async("arraybuffer")
-                ]).then(([shpData, shxData, dbfData]) => {
-                    // Process shapefile data
-                    L.shapefile(new Uint8Array(shpData), new Uint8Array(shxData), new Uint8Array(dbfData), {
-                        onEachFeature: function(feature, layer) {
-                            if (feature.properties.phenom === 'RP' && feature.properties.sig === 'S') {
+                    shxFile.async("arraybuffer"),
+                    dbfFile.async("arraybuffer")
+                ]);
+            }).then(([shpData, shxData, dbfData]) => {
+                return shapefile.open(new Uint8Array(shpData), new Uint8Array(shxData), new Uint8Array(dbfData));
+            }).then(source => {
+                source.read().then(function processFeature(result) {
+                    if (result.done) return;
+
+                    const feature = result.value;
+                    if (feature.properties.phenom === 'RP' && feature.properties.sig === 'S') {
+                        L.geoJSON(feature, {
+                            onEachFeature: function(feature, layer) {
                                 layer.bindPopup(`<b>${feature.properties.title}</b><br>${feature.properties.description}`);
-                            } else {
-                                layer.remove(); // Remove features that do not match the criteria
                             }
-                        }
-                    }).addTo(map);
+                        }).addTo(map);
+                    }
+
+                    source.read().then(processFeature);
                 });
             }).catch(error => console.error('Error:', error));
         });

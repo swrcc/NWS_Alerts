@@ -28,43 +28,46 @@
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }).addTo(map);
 
-        // File input change event handler
-        document.getElementById('fileInput').addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+        // Ensure shapefile library is loaded
+        document.addEventListener('DOMContentLoaded', function () {
+            // File input change event handler
+            document.getElementById('fileInput').addEventListener('change', function (event) {
+                const file = event.target.files[0];
+                if (!file) return;
 
-            // Load and process the zip file
-            JSZip.loadAsync(file).then(zip => {
-                const shpFile = zip.file(/\.shp$/i)[0];
-                const shxFile = zip.file(/\.shx$/i)[0];
-                const dbfFile = zip.file(/\.dbf$/i)[0];
-                if (!shpFile || !shxFile || !dbfFile) {
-                    throw new Error('Shapefile components not found in the archive.');
-                }
-
-                return Promise.all([
-                    shpFile.async("arraybuffer"),
-                    shxFile.async("arraybuffer"),
-                    dbfFile.async("arraybuffer")
-                ]);
-            }).then(([shpData, shxData, dbfData]) => {
-                return shapefile.open(new Uint8Array(shpData), new Uint8Array(shxData), new Uint8Array(dbfData));
-            }).then(source => {
-                source.read().then(function processFeature(result) {
-                    if (result.done) return;
-
-                    const feature = result.value;
-                    if (feature.properties.phenom === 'RP' && feature.properties.sig === 'S') {
-                        L.geoJSON(feature, {
-                            onEachFeature: function(feature, layer) {
-                                layer.bindPopup(`<b>${feature.properties.title}</b><br>${feature.properties.description}`);
-                            }
-                        }).addTo(map);
+                // Load and process the zip file
+                JSZip.loadAsync(file).then(zip => {
+                    const shpFile = zip.file(/\.shp$/i)[0];
+                    const shxFile = zip.file(/\.shx$/i)[0];
+                    const dbfFile = zip.file(/\.dbf$/i)[0];
+                    if (!shpFile || !shxFile || !dbfFile) {
+                        throw new Error('Shapefile components not found in the archive.');
                     }
 
-                    source.read().then(processFeature);
-                });
-            }).catch(error => console.error('Error:', error));
+                    return Promise.all([
+                        shpFile.async("arraybuffer"),
+                        shxFile.async("arraybuffer"),
+                        dbfFile.async("arraybuffer")
+                    ]);
+                }).then(([shpData, shxData, dbfData]) => {
+                    return shapefile.open(new Uint8Array(shpData), new Uint8Array(shxData), new Uint8Array(dbfData));
+                }).then(source => {
+                    return source.read().then(function processFeature(result) {
+                        if (result.done) return;
+
+                        const feature = result.value;
+                        if (feature.properties.phenom === 'RP' && feature.properties.sig === 'S') {
+                            L.geoJSON(feature, {
+                                onEachFeature: function (feature, layer) {
+                                    layer.bindPopup(`<b>${feature.properties.title}</b><br>${feature.properties.description}`);
+                                }
+                            }).addTo(map);
+                        }
+
+                        return source.read().then(processFeature);
+                    });
+                }).catch(error => console.error('Error:', error));
+            });
         });
     </script>
 </body>

@@ -19,6 +19,12 @@
             #loading { outline: none; border: none; background: transparent }
         </style>
         <script type="module">
+            async function installPackages() {
+                const pyodide = await loadPyodide();
+                await pyodide.loadPackage('geopandas');
+            }
+            installPackages();
+
             const loading = document.getElementById('loading');
             addEventListener('py:ready', () => loading.close());
             loading.showModal();

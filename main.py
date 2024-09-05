@@ -1,5 +1,5 @@
   import pyodide
-    import asyncio
+  import asyncio
 
     async def main():
         await pyodide.loadPackage('geopandas')

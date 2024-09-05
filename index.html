@@ -1,53 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Map Plotting with PyScript</title>
+    <title>PyScript Example</title>
     <link rel="stylesheet" href="https://pyscript.net/alpha/pyscript.css" />
     <script defer src="https://pyscript.net/alpha/pyscript.js"></script>
 </head>
 <body>
-    <h1>Map Plotting with PyScript</h1>
-    <div id="map-container">
-        <img id="map-image" alt="Map Image">
-    </div>
-    
+    <h1>PyScript Image Generation</h1>
     <py-script>
-        import tarfile
         import matplotlib.pyplot as plt
-        import geopandas as gpd
-        import os
 
-        # Extract the shapefile from the tar.gz file
-        tar_file = 'current_all.tar.gz'
-        extract_path = 'current_all'
-        if not os.path.exists(extract_path):
-            os.mkdir(extract_path)
-        
-        with tarfile.open(tar_file, 'r:gz') as tar:
-            tar.extractall(path=extract_path)
-        
-        # Assuming the shapefile is in the extracted directory
-        shapefile_path = [os.path.join(extract_path, f) for f in os.listdir(extract_path) if f.endswith('.shp')][0]
+        def create_image():
+            plt.plot([1, 2, 3, 4], [1, 4, 9, 16])
+            plt.title('Sample Plot')
+            plt.savefig('/mnt/data/plot.png')
 
-        # Load the shapefile using geopandas
-        gdf = gpd.read_file(shapefile_path)
-
-        # Plot the shapefile
-        fig, ax = plt.subplots(figsize=(10, 10))
-        gdf.plot(ax=ax)
-        plt.title('Map from Shapefile')
-        
-        # Save the plot as a .png image
-        png_file = 'map_image.png'
-        plt.savefig(png_file, format='png')
-        plt.close()
-
-        # Display the image in the HTML file
-        from js import document
-        image_element = document.getElementById('map-image')
-        image_element.src = png_file
+        create_image()
     </py-script>
+    <img src="/mnt/data/plot.png" alt="Generated Plot" />
 </body>
 </html>

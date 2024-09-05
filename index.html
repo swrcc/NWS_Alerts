@@ -4,21 +4,25 @@
     <title>Weather Hazards Map</title>
     <script type="module">
         import { loadPyodide } from "https://cdn.jsdelivr.net/pyodide/v0.23.0/full/pyodide.js";
+
         async function main() {
+            // Load Pyodide
             const pyodide = await loadPyodide();
+
+            // Load required packages
             await pyodide.loadPackage('geopandas');
             await pyodide.loadPackage('matplotlib');
-            await pyodide.runPythonAsync(`
-                from pathlib import Path
-                path = Path("/path/to/your/main.py")
-                with path.open() as file:
-                    code = file.read()
-                exec(code)
-            `);
+
+            // Load and execute the Python script
+            const response = await fetch('main.py');
+            const script = await response.text();
+            await pyodide.runPythonAsync(script);
         }
+
         main();
     </script>
 </head>
 <body>
+    <!-- The plot will be displayed here -->
 </body>
 </html>

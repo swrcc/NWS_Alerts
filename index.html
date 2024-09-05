@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Processing and Map Visualization</title>
+    <title>Shapefile Data Visualization</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         #map {
@@ -12,8 +12,7 @@
         }
     </style>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.shapefile/0.0.6/leaflet.shapefile.js"></script>
 </head>
 <body>
     <input type="file" id="fileInput" />
@@ -33,47 +32,22 @@
             const file = event.target.files[0];
             if (!file) return;
 
-            JSZip.loadAsync(file).then(zip => {
-                const csvFile = zip.file(/\.csv$/i)[0];
-                if (csvFile) {
-                    return csvFile.async("text");
-                } else {
-                    throw new Error('CSV file not found in the archive.');
-                }
-            }).then(csvData => {
-                Papa.parse(csvData, {
-                    header: true,
-                    dynamicTyping: true,
-                    complete: function(results) {
-                        processCsvData(results.data);
+            // Load and process shapefile
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const shapefileData = event.target.result;
+                L.shapefile(shapefileData, {
+                    onEachFeature: function(feature, layer) {
+                        if (feature.properties.phenom === 'RP' && feature.properties.sig === 'S') {
+                            layer.bindPopup(`<b>${feature.properties.title}</b><br>${feature.properties.description}`);
+                        } else {
+                            layer.remove(); // Remove features that do not match the criteria
+                        }
                     }
-                });
-            }).catch(error => console.error('Error:', error));
-        });
-
-        function processCsvData(data) {
-            const features = data
-                .filter(row => row.phenom === 'RP' && row.sig === 'Y')
-                .map(row => ({
-                    type: "Feature",
-                    geometry: {
-                        type: "Point",
-                        coordinates: [parseFloat(row.longitude), parseFloat(row.latitude)]
-                    },
-                    properties: {
-                        title: row.title,
-                        description: row.description
-                    }
-                }));
-
-            const geojson = {
-                type: "FeatureCollection",
-                features: features
+                }).addTo(map);
             };
-
-            // Add NWS alerts data to the map
-            L.geoJSON(geojson).addTo(map);
-        }
+            reader.readAsArrayBuffer(file);
+        });
     </script>
 </body>
 </html>

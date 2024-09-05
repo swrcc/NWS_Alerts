@@ -1,33 +1,29 @@
-import pyodide
-import asyncio
+import geopandas as gpd
+import matplotlib.pyplot as plt
+from pyscript import display
 
-async def main():
-  await pyodide.loadPackage('geopandas')
+def plot_map():
+    # Load the shapefile
+    gdf = gpd.read_file('current_all.shp')
 
-  import geopandas as gpd
-  import matplotlib.pyplot as plt
-  from pyscript import display
+    # Create a Matplotlib figure and axis
+    fig, ax = plt.subplots(figsize=(12, 8))
 
-  # Load the shapefile
-  gdf = gpd.read_file('current_all.shp')
+    # Set the map boundaries to the US
+    ax.set_xlim(-125, -66)
+    ax.set_ylim(24, 50)
 
-  # Create a Matplotlib figure and axis
-  fig, ax = plt.subplots(figsize=(12, 8))
+    # Plot the shapefile data
+    gdf.plot(ax=ax, edgecolor='black', facecolor='none')
 
-  # Set the map boundaries to the US
-  ax.set_xlim(-125, -66)
-  ax.set_ylim(24, 50)
+    # Add a title
+    ax.set_title('Weather Hazards Map of the United States')
 
-  # Plot the shapefile data
-  gdf.plot(ax=ax, edgecolor='black', facecolor='none')
+    # Optionally, add gridlines
+    ax.grid(True)
 
-  # Add a title
-  ax.set_title('Weather Hazards Map of the United States')
+    # Display the plot using PyScript
+    display(fig, target="mpl")
 
-  # Optionally, add gridlines
-  ax.grid(True)
-
-  # Display the plot using PyScript
-  display(fig, target="mpl")
-
-asyncio.run(main())
+# Call the function to plot the map
+plot_map()

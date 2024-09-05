@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>New York State Map</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
+    <style>
+        #map {
+            height: 600px;
+        }
+    </style>
+</head>
+<body>
+    <h1>New York State Map with County Boundaries</h1>
+    <div id="map"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
+    <script>
+        // Create a map centered on New York State
+        var map = L.map('map').setView([42.1657, -74.9481], 7);
+
+        // Add a tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Example of adding a GeoJSON layer
+        // Replace 'path_to_your_geojson_file.geojson' with the actual URL to your GeoJSON file
+        fetch('path_to_your_geojson_file.geojson')
+            .then(response => response.json())
+            .then(data => {
+                L.geoJson(data, {
+                    style: function (feature) {
+                        return { color: 'blue' };
+                    }
+                }).addTo(map);
+            })
+            .catch(error => console.error('Error loading GeoJSON:', error));
+    </script>
+</body>
+</html>

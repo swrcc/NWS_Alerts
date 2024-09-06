@@ -19,5 +19,5 @@ ABOUT THIS FILE:
   - one outline of NYS counties
   - one of world country borders
   - one of us state outlines
-  The code assumes that these shapefiles are stored in a folder called MappingElements and that the MappingElements folder is stored in the same directory
-  as the python script. 
+    
+These files are automatically downloaded on to your computer as part of the zipfile that is downladed from this github repository. The code assumes that these shapefiles are stored in a folder called "MappingElements" and that the MappingElements folder is stored in the same directory as the python script. If downloading the zipfile from this github repository you should not have to move any shapefiles around. However, if using Jupyter, you may need to modify the shapefile pathe 

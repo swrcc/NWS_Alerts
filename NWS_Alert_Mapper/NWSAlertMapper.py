@@ -164,7 +164,7 @@ for input_phenom in hazard_library['PHENOM'].values:
         else:
             ax.text(
                 x=0.47, y=0.425,
-                s=f'There are no {name} alerts\nfor New York State.',
+                s=f'There are no {name}\nalerts for New York State.',
                 ha='center',
                 va='center',
                 fontsize=18,

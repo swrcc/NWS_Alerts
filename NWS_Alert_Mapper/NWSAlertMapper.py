@@ -114,8 +114,8 @@ for input_phenom in hazard_library['PHENOM'].values:
     # Plot each layer in order
     world_gdf.plot(ax=ax, color='#eeeeee', edgecolor='black') 
     USstates_gdf.plot(ax=ax, color='#eeeeee', edgecolor='black')
-    state_gdf.plot(ax=ax, color='white', edgecolor='black')
-    counties_gdf.plot(ax=ax, color='none', edgecolor='black')
+    counties_gdf.plot(ax=ax, color='white', edgecolor='black')
+    state_gdf.plot(ax=ax, color='none', edgecolor='black', linewidth=2)
 
     hazard_info = hazard_library[hazard_library['PHENOM'] == input_phenom].iloc[0]
     name = hazard_info['Name']

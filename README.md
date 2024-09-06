@@ -3,7 +3,7 @@ TO DOWNLOAD THIS CODE:
   2) Click the green "Code" button
   3) Click "Download Zip"
   4) Then run the NWSAlertMapper.py code within
-This picture illustrates these download steps: ![Picture1](https://github.com/user-attachments/assets/f5f29fff-b6df-45e4-a8aa-3a516708f18a)
+![Picture1](https://github.com/user-attachments/assets/f5f29fff-b6df-45e4-a8aa-3a516708f18a)
 
 ABOUT THIS FILE: 
 - Title: NWSAlertMapper
